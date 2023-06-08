@@ -1,4 +1,5 @@
-tensorflow
-scikit-learn
-pandas
+Flask
 google-cloud-storage
+numpy
+pandas
+tensorflow

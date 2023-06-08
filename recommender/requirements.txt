@@ -1,5 +1,0 @@
-Flask
-google-cloud-storage
-numpy
-pandas
-tensorflow
