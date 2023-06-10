@@ -12,7 +12,7 @@ steps:
     args: ['push', 'asia.gcr.io/submission-mgce-dhillen/recommendation']
 
   # Deploy the container image to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  - name: 'asia.gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'run'
