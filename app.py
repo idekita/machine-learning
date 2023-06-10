@@ -27,10 +27,10 @@ def download_blob(file_name, file_path):
 
 def insert_recommendations(user_id, recommended_projects):
     db = mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
+        host=os.environ['DB_HOST'],
+        user=os.environ['DB_USER'],
+        password=os.environ['DB_PASSWORD'],
+        database=os.environ['DB_NAME']
     )
     cursor = db.cursor()
 
