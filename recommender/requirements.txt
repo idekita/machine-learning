@@ -3,3 +3,5 @@ google-cloud-storage
 numpy
 pandas
 tensorflow
+scikit-learn
+mysql-connector-python
