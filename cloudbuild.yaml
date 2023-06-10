@@ -1,18 +1,14 @@
 steps:
-  # Install dependencies
-  - name: 'asia.gcr.io/cloud-builders/npm'
-    args: ['install']
-
   # Build the container image
-  - name: 'asia.gcr.io/cloud-builders/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'asia.gcr.io/submission-mgce-dhillen/recommendation', '.']
 
   # Push the container image to Container Registry
-  - name: 'asia.gcr.io/cloud-builders/docker'
+  - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'asia.gcr.io/submission-mgce-dhillen/recommendation']
 
   # Deploy the container image to Cloud Run
-  - name: 'asia.gcr.io/google.com/cloudsdktool/cloud-sdk'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
       - 'run'
