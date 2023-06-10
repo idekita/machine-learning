@@ -1,13 +1,25 @@
 steps:
-  # Build the container image
+  # Step 0: Retrieve environment variables from GitHub Secrets
+  - name: 'gcr.io/cloud-builders/git'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "GCP_SA_KEY=$(cat /workspace/source/.github/secrets/GCP_SA_KEY)" >> /workspace/env_vars
+        echo "DB_HOST=$(cat /workspace/source/.github/secrets/DB_HOST)" >> /workspace/env_vars
+        echo "DB_USER=$(cat /workspace/source/.github/secrets/DB_USER)" >> /workspace/env_vars
+        echo "DB_PASSWORD=$(cat /workspace/source/.github/secrets/DB_PASSWORD)" >> /workspace/env_vars
+        echo "DB_NAME=$(cat /workspace/source/.github/secrets/DB_NAME)" >> /workspace/env_vars
+  
+  # Step 1 : Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'asia.gcr.io/submission-mgce-dhillen/recommendation', '.']
 
-  # Push the container image to Container Registry
+  # Step 2 : Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'asia.gcr.io/submission-mgce-dhillen/recommendation']
 
-  # Deploy the container image to Cloud Run
+  # Step 3 : Deploy the container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args:
