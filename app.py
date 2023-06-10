@@ -11,14 +11,9 @@ from sklearn.model_selection import train_test_split
 model = tf.keras.models.load_model("model/recommendation.h5")
 
 # Set up Google Cloud Storage client
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "submission-mgce-dhillen-cb4aed65d427.json"
+secret_key = os.environ['GCP_SA_KEY']
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = secret_key
 client = storage.Client()
-
-# Database configuration
-DB_HOST = '34.101.209.92'
-DB_USER = 'root'
-DB_PASSWORD = 'idekita'
-DB_NAME = 'idekita'
 
 bucket_name = 'dataset-csv'
 file_name1 = 'project.csv'
