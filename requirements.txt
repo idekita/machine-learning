@@ -5,4 +5,3 @@ pandas
 tensorflow
 scikit-learn
 mysql-connector-python
-csv
