@@ -20,3 +20,6 @@ steps:
       - 'managed'
       - '--region'
       - 'us-central1'
+
+options:
+  logging: NONE
