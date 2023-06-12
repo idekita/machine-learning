@@ -22,13 +22,12 @@ steps:
   # Step 3 : Deploy the container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
-    args:
-      - 'run'
-      - 'deploy'
-      - 'recommendation'
-      - '--image'
-      - 'asia.gcr.io/submission-mgce-dhillen/recommendation'
-      - '--platform'
-      - 'managed'
-      - '--region'
-      - 'asia-southeast2'
+    args: [
+      'run', 'deploy', 'recommendation',
+      '--image', 'gcr.io/submission-mgce-dhillen/recommendation',
+      '--region', 'as-sout',
+      '--platform', 'managed',
+      '--set-env-vars',
+      'GCP_SA_KEY=$_GCP_SA_KEY,DB_HOST=$_DB_HOST,DB_USER=$_DB_USER,DB_PASSWORD=$_DB_PASSWORD,DB_NAME=$_DB_NAME'
+    ]
+    timeout: '1200s'
