@@ -1,11 +1,11 @@
 steps:
   # Step 1 : Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'asia.gcr.io/submission-mgce-dhillen/recommendation', '.']
+    args: ['build', '-t', 'asia.gcr.io/ide-kita/recommendation', '.']
 
   # Step 2 : Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'asia.gcr.io/submission-mgce-dhillen/recommendation']
+    args: ['push', 'asia.gcr.io/ide-kita/recommendation']
 
   # Step 3 : Deploy the container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,7 +15,7 @@ steps:
       - 'deploy'
       - 'recommendation'
       - '--image'
-      - 'asia.gcr.io/submission-mgce-dhillen/recommendation'
+      - 'asia.gcr.io/ide-kita/recommendation'
       - '--platform'
       - 'managed'
       - '--region'
