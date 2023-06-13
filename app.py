@@ -5,17 +5,11 @@ import tensorflow as tf
 import mysql.connector
 from flask import Flask
 from google.cloud import storage
-from sklearn.model_selection import train_test_split
+from config import *
 import csv
 
 # Set up Flask app
 app = Flask(__name__)
-
-# Database configuration
-DB_HOST = os.environ.get('_DB_HOST')
-DB_USER = os.environ.get('_DB_USER')
-DB_PASSWORD = os.environ.get('_DB_PASSWORD')
-DB_NAME = os.environ.get('_DB_NAME')
 
 db = mysql.connector.connect(
         host=DB_HOST,
@@ -24,21 +18,10 @@ db = mysql.connector.connect(
         database=DB_NAME
     )
 
-# Cloud Storage configuration
-BUCKET_NAME = 'project-imgs'
-
-# Filename
-projek = 'project.csv'
-ratings = 'ratings.csv'
-preferensi = 'user.csv'
-
 # Load the SavedModel
 model = tf.keras.models.load_model("model/recommendation.h5")
 
-
-# Set up Google Cloud Storage client
-credent = os.environ.get('_GCP_CR')
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = credent
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDENTIALS_PATH
 client = storage.Client()
 
 def download_blob(file_name, file_path):
@@ -47,7 +30,6 @@ def download_blob(file_name, file_path):
     blob.download_to_filename(file_path)
 
 def insert_recommendations(user_id, recommended_projects):
-    
     cursor = db.cursor()
 
     # Delete existing recommendations for the user
