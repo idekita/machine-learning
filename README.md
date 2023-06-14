@@ -1,7 +1,6 @@
 # Recommendation System - IdeKita 
 Source code and documentation of the Machine Learning team on the "IdeKita" Bangkit Capstone Project.
 
-![Model Overview](https://storage.googleapis.com/project-imgs/Screenshot%20(1).png)
 
 we are developing model using scraping dataset in omdena.com, after that we defining our database using the structure, so the model can running with the same structure
 
