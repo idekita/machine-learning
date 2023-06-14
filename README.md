@@ -178,9 +178,6 @@ The application uses a machine learning model (`recommendation.h5`) to generate 
 
 
 
-Certainly! Here's the updated version with the text inside a bash code block:
-
-
 ## Usage Examples
 
 To use the application, follow these steps:
@@ -249,10 +246,6 @@ To deploy the Flask application, you can use Docker. Here's an example of how to
 
 5. Access the application in your browser at [http://localhost:5000](http://localhost:5000).
 
-
-## Deploy GCP with docker
-
-Certainly! Here's the continuation of the development process with cloud deployment using Google Cloud Platform (GCP).
 
 ## Cloud Deployment with Google Cloud Platform (GCP)
 
