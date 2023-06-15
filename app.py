@@ -25,13 +25,19 @@ def create_database_connection():
         database=DB_NAME
     )
 
-def reset_auto_increment(connection):
+def close_database_connection(connection):
+    connection.close()
+
+def download_blob(file_name, file_path):
+    client.get_bucket(BUCKET_NAME).blob(file_name).download_to_filename(file_path)
+
+def reset_auto_increment(connection, table_name):
     cursor = connection.cursor()
-    reset_auto_increment_query = "ALTER TABLE recommendations AUTO_INCREMENT = 1"
-    cursor.execute(reset_auto_increment_query)
+    reset_query = f"ALTER TABLE {table_name} AUTO_INCREMENT = 1"
+    cursor.execute(reset_query)
     cursor.close()
 
-def delete_existing_recommendations(connection, user_id):
+def delete_recommendations(connection, user_id):
     cursor = connection.cursor()
     delete_query = "DELETE FROM recommendations WHERE id_user = %s"
     delete_values = (user_id,)
@@ -45,18 +51,12 @@ def insert_recommendation(connection, user_id, project_id, project_title):
     cursor.execute(insert_query, values)
     cursor.close()
 
-def close_database_connection(connection):
-    connection.close()
-
-def download_blob(file_name, file_path):
-    client.get_bucket(BUCKET_NAME).blob(file_name).download_to_filename(file_path)
-
 def insert_recommendations(user_id, recommended_projects):
     db_connection = create_database_connection()
 
     try:
-        reset_auto_increment(db_connection)
-        delete_existing_recommendations(db_connection, user_id)
+        reset_auto_increment(db_connection, "recommendations")
+        delete_recommendations(db_connection, user_id)
 
         for index, row in recommended_projects.iterrows():
             project_id = row['Idproject']
