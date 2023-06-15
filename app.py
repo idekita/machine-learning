@@ -11,46 +11,64 @@ import csv
 # Set up Flask app
 app = Flask(__name__)
 
-db = mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
-    )
-
 # Load the SavedModel
 model = tf.keras.models.load_model("model/recommendation.h5")
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = CREDENTIALS_PATH
 client = storage.Client()
 
-def download_blob(file_name, file_path):
-    bucket = client.get_bucket(BUCKET_NAME)
-    blob = bucket.blob(file_name)
-    blob.download_to_filename(file_path)
+def create_database_connection():
+    return mysql.connector.connect(
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME
+    )
 
-def insert_recommendations(user_id, recommended_projects):
-    cursor = db.cursor()
+def reset_auto_increment(connection):
+    cursor = connection.cursor()
+    reset_auto_increment_query = "ALTER TABLE recommendations AUTO_INCREMENT = 1"
+    cursor.execute(reset_auto_increment_query)
+    cursor.close()
 
-    # Delete existing recommendations for the user
+def delete_existing_recommendations(connection, user_id):
+    cursor = connection.cursor()
     delete_query = "DELETE FROM recommendations WHERE id_user = %s"
     delete_values = (user_id,)
     cursor.execute(delete_query, delete_values)
+    cursor.close()
 
-    for index, row in recommended_projects.iterrows():
-        project_id = row['Idproject']
-        project_title = row['projecttitle']
+def insert_recommendation(connection, user_id, project_id, project_title):
+    cursor = connection.cursor()
+    insert_query = "INSERT INTO recommendations (id_user, id_project, project_title) VALUES (%s, %s, %s)"
+    values = (user_id, project_id, project_title)
+    cursor.execute(insert_query, values)
+    cursor.close()
 
-        # Execute the INSERT query
-        insert_query = "INSERT INTO recommendations (id_user, id_project, project_title) VALUES (%s, %s, %s)"
-        values = (user_id, project_id, project_title)
-        cursor.execute(insert_query, values)
+def close_database_connection(connection):
+    connection.close()
 
-    # Commit the changes to the database
-    db.commit()
+def download_blob(file_name, file_path):
+    client.get_bucket(BUCKET_NAME).blob(file_name).download_to_filename(file_path)
+
+def insert_recommendations(user_id, recommended_projects):
+    db_connection = create_database_connection()
+
+    try:
+        reset_auto_increment(db_connection)
+        delete_existing_recommendations(db_connection, user_id)
+
+        for index, row in recommended_projects.iterrows():
+            project_id = row['Idproject']
+            project_title = row['projecttitle']
+            insert_recommendation(db_connection, user_id, project_id, project_title)
+
+        db_connection.commit()
+
+    finally:
+        close_database_connection(db_connection)
 
 def get_recommendations(ratings_data, project_data, user_data, model):
-    # Mapping dictionaries
     user_to_index = {user_id: index for index, user_id in enumerate(ratings_data['Iduser'].unique())}
     project_to_index = {project_id: index for index, project_id in enumerate(ratings_data['Idproject'].unique())}
 
@@ -75,70 +93,65 @@ def get_recommendations(ratings_data, project_data, user_data, model):
             project_indices = filtered_projects['Idproject'].map(project_to_index).values
 
             if len(filtered_projects) > 0:
-                # Lakukan prediksi rating menggunakan model
                 predicted_ratings = model.predict([user_indices, project_indices]).flatten()
-
-                # Gabungkan proyek yang belum dilihat dengan prediksi ratingnya
                 filtered_projects['predicted_rating'] = predicted_ratings
-
-                # Urutkan proyek berdasarkan prediksi rating secara menurun
                 recommended_projects = filtered_projects.sort_values('predicted_rating', ascending=False).head(10)
 
-                # insert rekomendasi proyek
-                insert_recommendations(user_id, recommended_projects)
-                print("Recommendation succesfull")
+                print(f"Recommendation for User ID {user_id}:")
+                print(recommended_projects)
+                print("Recommendation successful")
+                insert_recommendations(user_id, recommended_projects)  # Insert recommendations into the database
             else:
                 print("No projects available for recommendation.")
         else:
             print(f"Invalid pref_categories for User ID {user_id}. Skipping recommendation.")
 
-# Routes
 @app.route('/')
 def convert_to_csv():
-    cursor = db.cursor()
+    db_connection = create_database_connection()
+    cursor = db_connection.cursor()
+    try:
+        query_projek = "SELECT projects.id_proyek AS Idproject, projects.nm_proyek AS projecttitle, categories.nm_kategori AS categories FROM projects INNER JOIN categories ON projects.id_kategori = categories.id_kategori;"
+        cursor.execute(query_projek)
+        data_projek = cursor.fetchall()
 
-    # Execute the SQL query to fetch the data from projects table
-    query_projek = "SELECT projects.id_proyek AS Idproject, projects.nm_proyek AS projecttitle, categories.nm_kategori AS categories FROM projects INNER JOIN categories ON projects.id_kategori = categories.id_kategori;"
-    cursor.execute(query_projek)
-    data_projek = cursor.fetchall()
+        query_ratings = "SELECT ratings.id_proyek AS Idproject, users.id_user AS Iduser, ratings.nilai AS ratings, UNIX_TIMESTAMP(ratings.updatedAt) AS timestamp FROM ratings INNER JOIN users ON ratings.username = users.username"
+        cursor.execute(query_ratings)
+        data_ratings = cursor.fetchall()
 
-    # Execute the SQL query to fetch the data from ratings table
-    query_ratings = "SELECT ratings.id_proyek AS Idproject, users.id_user AS Iduser, ratings.nilai AS ratings, UNIX_TIMESTAMP(ratings.updatedAt) AS timestamp FROM ratings INNER JOIN users ON ratings.username = users.username"
-    cursor.execute(query_ratings)
-    data_ratings = cursor.fetchall()
+        query_pref = "SELECT id_user AS Iduser, pref_categories AS pref_categories FROM users"
+        cursor.execute(query_pref)
+        data_user = cursor.fetchall()
 
-    query_pref = "SELECT id_user AS Iduser, pref_categories AS pref_categories FROM users"
-    cursor.execute(query_pref)
-    data_user = cursor.fetchall()
+        with open(projek, 'w', newline='') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(['Idproject', 'projecttitle', 'categories'])
+            csv_writer.writerows(data_projek)
 
-    # Export data to a CSV file with headers
-    
-    with open(projek, 'w', newline='') as file:
-        csv_writer = csv.writer(file)
-        csv_writer.writerow(['Idproject', 'projecttitle', 'categories'])  # Add header row
-        csv_writer.writerows(data_projek)
+        with open(ratings, 'w', newline='') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(['Idproject', 'Iduser', 'ratings', 'timestamp'])
+            csv_writer.writerows(data_ratings)
 
-    with open(ratings, 'w', newline='') as file:
-        csv_writer = csv.writer(file)
-        csv_writer.writerow(['Idproject', 'Iduser', 'ratings', 'timestamp'])  # Add header row
-        csv_writer.writerows(data_ratings)
+        with open(preferensi, 'w', newline='') as file:
+            csv_writer = csv.writer(file)
+            csv_writer.writerow(['Iduser', 'pref_categories'])
+            csv_writer.writerows(data_user)
 
-    with open(preferensi, 'w', newline='') as file:
-        csv_writer = csv.writer(file)
-        csv_writer.writerow(['Iduser', 'pref_categories'])  # Add header row
-        csv_writer.writerows(data_user)
+        bucket = client.bucket(BUCKET_NAME)
+        blob1 = bucket.blob(projek)
+        blob2 = bucket.blob(ratings)
+        blob3 = bucket.blob(preferensi)
+        blob1.upload_from_filename(projek)
+        blob2.upload_from_filename(ratings)
+        blob3.upload_from_filename(preferensi)
 
-    # Upload the CSV files to Cloud Storage
-    bucket = client.bucket(BUCKET_NAME)
-    blob1 = bucket.blob(projek)
-    blob2 = bucket.blob(ratings)
-    blob3 = bucket.blob(preferensi)
-    blob1.upload_from_filename(projek)
-    blob2.upload_from_filename(ratings)
-    blob3.upload_from_filename(preferensi)
-
-    return 'Database converted to CSV and uploaded to Cloud Storage.'
-
+        return 'Database converted to CSV and uploaded to Cloud Storage.'
+    finally:
+        if cursor:
+            cursor.close()
+        if db_connection:
+            close_database_connection(db_connection)
 
 @app.route('/recommendations', methods=['POST'])
 def recommend_projects():
@@ -153,7 +166,6 @@ def recommend_projects():
     get_recommendations(ratings_data, project_data, user_data, model)
 
     return "Recommendations inserted into the database successfully!"
-
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
