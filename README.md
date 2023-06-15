@@ -6,10 +6,12 @@ Source code and documentation of the Machine Learning team on the "IdeKita" Bang
 [![](https://mermaid.ink/img/pako:eNp9VMtqwzAQ_BWjkwLJD_jQS9NCoSWlvRqMIq0TF1kysnQwIf9eWeuHYjs2GO3OjnawZq0b4VoAScnFsPqafP5kKlOJfxp3RuhD1c4i5howednllE7xbofV2ug_4HYgPKQDB5RYCLxVZxCiVJdIBAasFxrzuVhEXEBbou-SWQsqkiwQ6QX7bC43kmbAltRR2-TbaOF4f4xC27xGgNIo2WryqhVnXsi_WOEBoBTXTX2jaz1YKDDxuhhsnpGTsu2Ulf9SEFgteC5ZC4bSIdpqcXJ2nB4dYkpxXdk1jVRyOLzMBmFlxgJr4fraFE39itj3xd6HjsWzEQmsyLfVEVknLdqgfc87xHWMsfGKp6EwmPJoVijhuZM9qcBUrBT-p791tIzYK1SQkdSHAgrmpM1Ipu6eypzVv63iJLXGwZ64WvgJPJbM21uRtGCy8SiI0mrzhRdJuE_u_zwpe5A?type=png)](https://mermaid.live/edit#pako:eNp9VMtqwzAQ_BWjkwLJD_jQS9NCoSWlvRqMIq0TF1kysnQwIf9eWeuHYjs2GO3OjnawZq0b4VoAScnFsPqafP5kKlOJfxp3RuhD1c4i5howednllE7xbofV2ug_4HYgPKQDB5RYCLxVZxCiVJdIBAasFxrzuVhEXEBbou-SWQsqkiwQ6QX7bC43kmbAltRR2-TbaOF4f4xC27xGgNIo2WryqhVnXsi_WOEBoBTXTX2jaz1YKDDxuhhsnpGTsu2Ulf9SEFgteC5ZC4bSIdpqcXJ2nB4dYkpxXdk1jVRyOLzMBmFlxgJr4fraFE39itj3xd6HjsWzEQmsyLfVEVknLdqgfc87xHWMsfGKp6EwmPJoVijhuZM9qcBUrBT-p791tIzYK1SQkdSHAgrmpM1Ipu6eypzVv63iJLXGwZ64WvgJPJbM21uRtGCy8SiI0mrzhRdJuE_u_zwpe5A)
 
 
-we are developing model using scraping dataset in omdena.com, after that we defining our database using the structure, so the model can running with the same structure
+we are developing a model using scraping datasets in omdena.com, after that we define our database using the structure, so the model can run with the same structure
 
 ## Dataset
-Our dataset basicly is scraping data from omdena.com with format look like this 
+Our dataset basically is scraping data from omdena.com with a format look like this 
+
+https://www.kaggle.com/datasets/charismadeo/omdena-project-scraping-recommendation
 
 project.csv 
 | Idproject | Project Title                                       | Categories                                         |
@@ -265,7 +267,7 @@ To deploy the application on GCP, follow these steps:
    - Create a database within the instance.
    - Import the necessary tables using the structure given.
    
-4. Update the `config.py` file with and get the credential at services account gcp.
+4. Update the `config.py` file and get the credential at services account gcp.
 
 5. Build a Docker image of the application as explained in the previous section.
 
